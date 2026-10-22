@@ -1,0 +1,64 @@
+# F.CSM302 Үйлдлийн систем — Лабораторийн ажлууд (2026–2027 намар)
+
+[![labs](https://github.com/Zolnaiz/F.CSA302/actions/workflows/labs.yml/badge.svg)](https://github.com/Zolnaiz/F.CSA302/actions/workflows/labs.yml)
+
+Б.Билгүүн (B190910014).
+
+Багш: Доктор (Ph.D) Г. Ганбат · Сурах бичиг: Silberschatz, Galvin, Gagne — *Operating System Concepts*, 10th ed. (2018)
+Үнэлгээнд лабораторийн даалгавар **16 оноо**.
+
+## Лабууд
+
+| Лаб | Сэдэв | Хугацаа | Илгээх | Бэлэн | Таны хийх | Заавар |
+|---|---|---|---|---|---|---|
+| №1 | Хөгжүүлэх орчин (WSL, SSH, VS Code, Hello world) | 09-08 ⏰ | Бичлэг ≤ 2 мин | Орчин, SSH, код | 🎥 бичлэг | [lab1/ЗААВАР.md](lab1/ЗААВАР.md) |
+| №2 | FileCopy — POSIX, Windows API, strace | 09-15 ⏰ | Бичлэг ≤ 30 сек | Код, тест, strace, gdb скрипт | 🎥 бичлэг | [lab2/ЗААВАР.md](lab2/ЗААВАР.md) |
+| №3 | Процесс ба санах ой (Бүлэг 3) | 09-22 ⏰ | PDF + бичлэг ≤ 1 мин | PDF, 6 программ | 🎥 бичлэг | [lab3/ЗААВАР.md](lab3/ЗААВАР.md) |
+| №4 | Урсгал ба зэрэгцээ байдал (Бүлэг 4) | 09-29 ⏰ | PDF + бичлэг ≤ 1 мин | PDF, 8 программ | 🎥 бичлэг | [lab4/ЗААВАР.md](lab4/ЗААВАР.md) |
+| №5 | CPU хуваарилалт (Бүлэг 5) | **10-09** | PDF | PDF | илгээх | [lab5/ЗААВАР.md](lab5/ЗААВАР.md) |
+| №6 | Синхрончлол — уралдаан, мутекс, монитор (Бүлэг 6) | **10-16** | PDF + бичлэг ≤ 1 мин | PDF, 3 программ + тест | 🎥 бичлэг | [lab6/ЗААВАР.md](lab6/ЗААВАР.md) |
+
+⏰ — хугацаа өнгөрсөн → Teams дээр **Turn in late**.
+
+## Бие даалт
+
+| | Сэдэв | Хугацаа | Бэлэн | Таны хийх | Заавар |
+|---|---|---|---|---|---|
+| БД1 | IV-2-2 · Linux Kernel Module for Task Information (Task hierarchy UI) | 9-р долоо хоног пост, 10-р долоо хоног шүүмж | Module, UI, 37 тест, Report.pdf, Manual.pdf, локал git | GitHub push, tag, Teams пост, IV-2-5-ийг шүүмжлэх | [БД1_ЗААВАР.md](БД1_ЗААВАР.md) · [bd1-IV-2-2/](bd1-IV-2-2/) (багийн repo: [Tugu8/os-bd1-IV-2-2-](https://github.com/Tugu8/os-bd1-IV-2-2-)) |
+
+
+## Бүгдийг ажиллуулах
+
+```bash
+bash run_all.sh      # лаб 1–6-г хөрвүүлж тестлэнэ; FAIL байвал exit 1
+```
+GitHub дээр push / pull request бүрт [`.github/workflows/labs.yml`](.github/workflows/labs.yml) ижил скриптийг Ubuntu 22.04 дээр ажиллуулна.
+Сурах бичиг, лекцийн слайд (зохиогчийн эрхтэй) repo-д ороогүй.
+
+## Орчин
+
+| | Windows 11 (үндсэн) | WSL2 Ubuntu 22.04 (виртуал) |
+|---|---|---|
+| C | gcc 16.2 (WinLibs), gdb | gcc 11.4, strace, OpenMP |
+| Java | JDK 25 | OpenJDK 17 |
+| Бусад | PuTTY, VS Code, Edge | OpenSSH server, XeLaTeX, WSL кернелийн build орчин (`/usr/src/WSL2-Linux-Kernel`) |
+
+```powershell
+wsl -d Ubuntu-22.04        # Ubuntu руу орох
+```
+```bash
+cd "/mnt/c/lesson 2026/F.CSA302"     # Ubuntu дотроос энэ хавтас
+```
+SSH: PuTTY → `localhost:22`, user `root`, key `C:\Users\Dell\.ssh\wsl_lab1.ppk`.
+
+## Илгээхийн өмнөх шалгах хуудас
+
+- [ ] Бичлэг бүр хугацааны хязгаартаа багтсан (№1 ≤ 2 мин, №2 ≤ 30 сек, №3, 4, 6 ≤ 1 мин)
+- [ ] Бичлэгт **өөрийн дуу хоолой** сонсогдож байгаа
+- [ ] №3, №4, №6 — PDF **болон** бичлэг хоёулаа хавсаргасан
+- [ ] PDF-ийн нүүрэн дээрх нэр, оюутны код зөв (`report/*.tex` → дахин `xelatex`)
+- [ ] Teams дээр **Turn in / Turn in late** дарсан
+
+## Лекцийн материал
+
+`Lec1`–`Lec9 *.pptx` — лекцийн слайд (Teams-ээс; repo-д ороогүй). Тайлан, бичлэгт **лекцийн нэр томьёо**г ашигласан: урсгал (thread), эрэмбэ (priority), хүү процесс, дундын санах ой, контекст сэлгэлт, эргэлтийн/хүлээлтийн хугацаа, кернел/цөм, эгзэгтэй муж, мутекс, семафор, монитор, уралдааны нөхцөл.

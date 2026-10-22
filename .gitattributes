@@ -1,0 +1,10 @@
+# Linux дээр (WSL, GitHub Actions) ажиллах файлууд LF мөрийн төгсгөлтэй
+*.sh       text eol=lf
+*.c        text eol=lf
+*.h        text eol=lf
+*.py       text eol=lf
+*.java     text eol=lf
+Makefile   text eol=lf
+*.yml      text eol=lf
+*.pdf      binary
+*.png      binary

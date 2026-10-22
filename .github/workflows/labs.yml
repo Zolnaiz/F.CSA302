@@ -1,0 +1,17 @@
+name: labs
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Бүх лабыг хөрвүүлж тестлэх
+        run: bash run_all.sh

@@ -1,0 +1,34 @@
+# Хувийн / зохиогчийн эрхтэй материал — нийтийн repo-д оруулахгүй
+/*.pdf
+/*.pptx
+/*.docx
+/Biy daalt/
+# Тусдаа git repo-ууд (БД1 нь bd1-IV-2-2/ хавтсаар орно)
+/bd1/
+/os-bd1-IV-2-2-/
+
+# Хөрвүүлсэн файлууд — `make` / `bash run_all.sh` дахин үүсгэнэ
+lab2/FileCopy
+lab3/zombie
+lab3/time_shm
+lab3/time_pipe
+lab3/pid_manager
+lab3/collatz
+lab3/collatz_shm
+lab4/stats
+lab4/primes
+lab4/monte_carlo
+lab4/monte_carlo_omp
+lab4/fib
+lab4/pid_manager_mt
+lab6/race
+lab6/mutex
+lab6/monitor
+*.o
+*.exe
+*.class
+*.aux
+*.log
+*.out
+*.toc
+__pycache__/

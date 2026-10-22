@@ -32,3 +32,6 @@ lab6/monitor
 *.out
 *.toc
 __pycache__/
+
+# Хувийн тэмдэглэл
+/БД1_ЗААВАР.md

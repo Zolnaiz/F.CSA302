@@ -15,3 +15,18 @@ jobs:
           java-version: "17"
       - name: Бүх лабыг хөрвүүлж тестлэх
         run: bash run_all.sh
+
+  bd1-ui:
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: bd1-IV-2-2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: UI API тест (kernel module-гүй → fallback горим)
+        run: python3 -m unittest -v src/ui/tests/test_api.py
+      - name: Модны байрлал, diff тест (Node)
+        run: node --test src/ui/tests/test_tree.mjs

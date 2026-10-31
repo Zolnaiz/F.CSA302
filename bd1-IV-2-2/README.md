@@ -52,9 +52,9 @@ UI нь зөвхөн Python 3 стандарт сан, браузер ашигл
 
 | | Хувилбар |
 |---|---|
-| OS | Ubuntu 22.04 LTS (туршсан: WSL2 kernel `6.6.87.2-microsoft-standard-WSL2`) |
+| OS | Ubuntu 22.04 / 24.04 LTS, Debian — bare-metal эсвэл VM (туршсан: Ubuntu 24.04.5 bare-metal, kernel `7.0.0-34-generic`; Kubuntu 26.04.1, kernel `7.0.0-38-generic`; хөгжүүлэлт: WSL2 `6.6.87.2`) |
 | Kernel API | `proc_ops` (≥ 5.6), `task_struct->__state` (≥ 5.14), `seq_file` |
-| Хөрвүүлэгч | gcc 11.4, GNU make |
+| Хөрвүүлэгч | gcc 13.3 (Ubuntu 24.04), gcc 15.2 (Kubuntu 26.04), gcc 11.4 (WSL2), GNU make |
 | UI | Python ≥ 3.8, орчин үеийн браузер (Edge, Chrome, Firefox) |
 | Тест | bash, Python `unittest`; Node ≥ 18 (UI-ийн модны тест, заавал биш) |
 
@@ -62,29 +62,29 @@ UI нь зөвхөн Python 3 стандарт сан, браузер ашигл
 
 | Хавтас | Агуулга | Хариуцагч |
 |---|---|---|
-| `src/prereq/` | 2-р бүлгийн бэлтгэл kernel module (`/proc` entry үүсгэх), build орчин | B210930842 |
+| `src/prereq/` | 2-р бүлгийн бэлтгэл kernel module (`/proc` entry үүсгэх), build орчин | B210930842 (гүйцэтгэсэн: B190910014) |
 | `src/kmod/` | Үндсэн kernel module (`pid.c`, `Makefile`) | B242270047 |
 | `src/ui/` | Task hierarchy дүрслэлтэй interactive UI | B190910014 |
 | `tests/basic/` | Номын жишээ болон үндсэн тестүүд | B231910003 |
 | `tests/boundary/` | Захын болон буруу оролтын тестүүд | B231910003 |
-| `docs/` | Manual (хэрэглэгчийн + operational), зургууд, [TASKS.md](docs/TASKS.md) | B241940099, B210930842 |
-| `report/` | Үндсэн тайлан (Report.pdf) | B232270108 |
+| `docs/` | Manual ([Manual.md](docs/Manual.md), [IV-2-2_Manual.pdf](docs/IV-2-2_Manual.pdf)), зургууд, [TASKS.md](docs/TASKS.md) | B241940099, B210930842 |
+| `report/` | Үндсэн тайлан [IV-2-2_BD1_Report.pdf](report/IV-2-2_BD1_Report.pdf) (+ `.tex`, `build_pdfs.sh`) | B232270108 (гүйцэтгэсэн: B190910014, B242270047) |
 | `review/` | IV-2-5 багийн ажилд бичих шүүмж (Review.pdf) | B241940099 (бүгд) |
 
 ## Тест
 
 ```bash
-bash tests/basic/test_basic.sh            # номын жишээ, PID 1, байхгүй PID, child
-bash tests/boundary/test_boundary.sh      # abc, -5, хоосон, маш том тоо, kernel thread
+bash tests/basic/test_basic.sh            # номын жишээ, PID 1, байхгүй PID, child, kernel thread
+bash tests/boundary/test_boundary.sh      # abc, -5, хоосон, 0, маш том тоо, overflow, урт мөр
 python3 -m unittest src/ui/tests/test_api.py
 python3 src/ui/contract_check.py          # module ↔ UI интерфейс (✔ / ⚠ / ✖)
 ```
 
-`tests/`, `src/ui/` нь тус тусын PR merge хийгдсэний дараа ажиллана. Тест бүрийн хүлээгдсэн ба бодит үр дүнг `tests/`-ийн README-д screenshot-той хадгална.
+Бодит үр дүн: `tests/*/result_baremetal.txt` (Ubuntu 24.04), `tests/*/result_acer_kubuntu.txt` (Kubuntu 26.04), орчны мэдээлэл `tests/env_*.txt`-д байна. Нэгтгэсэн хүснэгтийг [Manual](docs/Manual.md)-ийн A7 болон тайлангийн §8.1-ээс харна уу.
 
 ## Хувилбар ба ажлын заавар
 
-- Хувилбарыг [Semantic Versioning](https://semver.org/lang/mn/) (`vMAJOR.MINOR.PATCH`)-ээр дугаарлана. БД1-ийн илгээлт → `v1.0.0`, БД2 → `v2.0.0`. Өөрчлөлтийг [CHANGELOG.md](CHANGELOG.md)-д бичнэ.
+- Хувилбарыг [Semantic Versioning](https://semver.org/lang/mn/) (`vMAJOR.MINOR.PATCH`)-ээр дугаарлана. БД1-ийн илгээлт → `v1.0.0` (засвар: `v1.0.1`), БД2 → `v2.0.0`. Өөрчлөлтийг [CHANGELOG.md](CHANGELOG.md)-д бичнэ.
 - Branch, commit, Pull Request, review, release хийх дүрэм: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Багийн гишүүд
@@ -94,6 +94,4 @@ B242270047 · B190910014 · B210930842 · B231910003 · B232270108 · B241940099
 ## Бэлэн код, сан, AI ашиглалт
 
 - Kernel module нь номын Programming Project 2-ын skeleton (`proc_ops`, `kmalloc`, `copy_from_user`, `kstrtol`, `pid_task`, `find_vpid`) дээр суурилсан.
-- UI (`src/ui/`): кодыг Claude (Anthropic) AI туслахын тусламжтай боловсруулсан. B190910014 уншиж, ажиллуулж, туршиж шалгасан. Гадны сан ашиглаагүй.
-- Хэрэглэгчийн manual (`docs/Manual.md`) болон шүүмжийн төлөвлөгөө (`review/README.md`): ноорогийг Claude (Anthropic) AI туслахын тусламжтай боловсруулсан. B241940099 уншиж, UI-ийн код болон README-тэй тулгаж шалгасан.
-- Бусад хэсэгт AI ашигласан бол хариуцагч нь энд нэмж бичнэ.
+- Код болон баримт бичгийг боловсруулахад AI туслах (Claude) ашигласан; хариуцсан гишүүд уншиж, ажиллуулж, туршиж шалгасан. Гадны программын сан ашиглаагүй.

@@ -47,6 +47,21 @@ expect "race: уралдаан илэрнэ, mutex/monitor: 6/6 OK" "" bash -c '
   grep -q "^race.*RACE CONDITION DETECTED" <<<"$out" &&
   [ "$(grep -E "^(mutex|monitor)" <<<"$out" | grep -c "OK - no race")" -eq 6 ]'
 
+echo "== Лаб 7 — түгжрэл"
+expect "make (bridge, Transaction)" "" make -s -C lab7
+expect "8.32 гүүр basic: зөрчил 0" "0 удаа" ./lab7/bridge 3 3
+expect "8.31 гүүр fair: зөрчил 0" "0 удаа" ./lab7/bridge 4 4 fair
+expect "8.33 ordered: нийт мөнгө хадгалагдсан" "хадгалагдсан: true" java -cp lab7 Transaction ordered
+expect "8.33 naive: deadlock илэрнэ" "DEADLOCK" bash -c '! java -cp lab7 Transaction naive'
+expect "банкирын алгоритм 8.9a аюулгүй биш" "АЮУЛГҮЙ БИШ" python3 lab7/banker.py
+
+echo "== Лаб 8 — үндсэн санах ой"
+expect "make" "" make -s -C lab8
+expect "9.28 номын жишээ 19986 → 4 / 3602" "page number = 4" bash -c './lab8/addresses 19986 | grep -A1 "page number = 4" | grep -q "offset = 3602" && echo "page number = 4"'
+expect "9.28 хамгийн том хаяг" "page number = 1048575" ./lab8/addresses 4294967295
+expect "9.28 хэт том → алдаа" "does not fit" bash -c '! ./lab8/addresses 4294967296'
+expect "9.6/9.7 тооцоо" "хуудас 1953, офсет 129" python3 lab8/memcalc.py
+
 echo
 if [ $fail -eq 0 ]; then echo "Бүгд PASS"; else echo "$fail FAIL"; fi
 exit $((fail > 0))

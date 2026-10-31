@@ -24,6 +24,8 @@ lab4/pid_manager_mt
 lab6/race
 lab6/mutex
 lab6/monitor
+lab7/bridge
+lab8/addresses
 *.o
 *.exe
 *.class

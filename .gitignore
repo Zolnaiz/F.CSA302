@@ -26,6 +26,8 @@ lab6/mutex
 lab6/monitor
 lab7/bridge
 lab8/addresses
+lab9/page_replace
+lab10/disk_sched
 *.o
 *.exe
 *.class

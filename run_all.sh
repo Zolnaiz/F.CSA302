@@ -62,6 +62,32 @@ expect "9.28 хамгийн том хаяг" "page number = 1048575" ./lab8/addr
 expect "9.28 хэт том → алдаа" "does not fit" bash -c '! ./lab8/addresses 4294967296'
 expect "9.6/9.7 тооцоо" "хуудас 1953, офсет 129" python3 lab8/memcalc.py
 
+echo "== Лаб 9 — виртуал санах ой"
+expect "make" "" make -s -C lab9
+expect "10.44 номын жишээ FIFO 15 / LRU 12 / OPT 9" "OPT:  9" bash -c '
+  out=$(./lab9/page_replace 3 -r "7 0 1 2 0 3 0 4 2 3 0 3 2 1 2 0 1 7 0 1"); echo "$out"
+  grep -q "FIFO: 15" <<<"$out" && grep -q "LRU:  12" <<<"$out"'
+expect "10.44 Belady: FIFO 3 фрэйм 9, 4 фрэйм 10" "" bash -c '
+  [ "$(./lab9/page_replace 3 -r "1 2 3 4 1 2 5 1 2 3 4 5" | grep FIFO)" = "FIFO: 9 page faults" ] &&
+  [ "$(./lab9/page_replace 4 -r "1 2 3 4 1 2 5 1 2 3 4 5" | grep FIFO)" = "FIFO: 10 page faults" ]'
+expect "10.44 санамсаргүй мөр" "OPT:" ./lab9/page_replace 4 1000 7
+expect "10.44 0 фрэйм → алдаа" "frames must be" bash -c '! ./lab9/page_replace 0'
+expect "10.4–10.9 тооцоо" "LRU': 18, 'FIFO': 17, 'OPT': 13" python3 lab9/vmcalc.py
+
+echo "== Лаб 10 — их хэмжээний санах төхөөрөмж"
+expect "make" "" make -s -C lab10
+expect "11.27 номын жишээ FCFS 640 / SCAN 236 / C-SCAN 382" "C-SCAN: total head movement = 382" bash -c '
+  out=$(./lab10/disk_sched 53 -c 200 -r "98 183 37 122 14 124 65 67"); echo "$out"
+  grep -q "FCFS:   total head movement = 640" <<<"$out" && grep -q "SCAN:   total head movement = 236" <<<"$out"'
+expect "11.27 C ба Python ижил (1000 хүсэлт)" "" bash -c '
+  req=$(python3 -c "import random; random.seed(5); print(\" \".join(str(random.randrange(5000)) for _ in range(1000)))")
+  c=$(./lab10/disk_sched 2150 -r "$req" | grep -o "[0-9]* cylinders" | cut -d" " -f1 | tr "\n" " ")
+  p=$(python3 lab10/diskcalc.py 2150 $req | awk "NR>1 {print \$2}" | tr "\n" " ")
+  echo "C: $c Python: $p"; [ "$c" = "$p" ]'
+expect "11.27 санамсаргүй 1000 хүсэлт" "C-SCAN:" ./lab10/disk_sched 2150
+expect "11.27 толгой 5000 → алдаа" "head must be" bash -c '! ./lab10/disk_sched 5000'
+expect "11.7 тооцоо" "25,000.00 байт" python3 lab10/diskcalc.py
+
 echo
 if [ $fail -eq 0 ]; then echo "Бүгд PASS"; else echo "$fail FAIL"; fi
 exit $((fail > 0))

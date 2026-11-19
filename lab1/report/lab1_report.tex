@@ -1,0 +1,118 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{fontspec}
+\setmainfont{DejaVu Serif}
+\setsansfont{DejaVu Sans}
+\setmonofont{DejaVu Sans Mono}[Scale=0.85]
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{titlesec}
+
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{0pt}
+\sloppy
+\setlength{\emergencystretch}{3em}
+\hypersetup{hidelinks}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  frame=single, framerule=0.3pt, rulecolor=\color{gray!60},
+  backgroundcolor=\color{gray!6},
+  columns=fullflexible, keepspaces=true,
+  language={}, showstringspaces=false,
+  xleftmargin=1em, xrightmargin=1em
+}
+
+\begin{document}
+
+\begin{center}
+  {\Large\bfseries Лабораторийн ажил №1}\\[0.4em]
+  {\large Үйлдлийн систем дээр суурилсан программчлалын орчин бүрдүүлэх}\\[0.8em]
+  F.CSM302 Үйлдлийн систем\\
+  Гүйцэтгэсэн: Б.Билгүүн (B190910014)\\[0.3em]
+  Сурах бичиг: A. Silberschatz, P. B. Galvin, G. Gagne, \textit{Operating System Concepts}, 10th ed., Wiley, 2018 (§1.7, §18)
+\end{center}
+\hrule
+\bigskip
+
+\section{Даалгавар}
+\begin{enumerate}[leftmargin=1.5em]
+  \item Windows дээр Linux-ийг виртуалаар суулгах, сүлжээ тохируулж виртуал систем рүү файл хуулах.
+  \item Виртуал систем рүү SSH хандалт тохируулах (OpenSSH + PuTTY), үндсэн системээс нэвтэрч файлд хандах.
+  \item VS Code суулгах.
+  \item Үндсэн ба виртуал систем дээр C болон Java хэлээр “Hello world” ажиллуулах.
+\end{enumerate}
+
+\section{Бүрдүүлсэн орчин}
+\begin{center}
+\begin{tabular}{l>{\raggedright}p{5.3cm}>{\raggedright\arraybackslash}p{5.8cm}}
+\toprule
+ & Үндсэн систем (host) & Виртуал систем (guest)\\
+\midrule
+ҮС & Windows 11 Home & Ubuntu 22.04.5 LTS (WSL2, кернел 6.6.87.2)\\
+C хөрвүүлэгч & gcc 16.2 (WinLibs MinGW-w64) & gcc 11.4 (\texttt{build-essential})\\
+Java & JDK 25 & OpenJDK 17\\
+Сүлжээ & \texttt{vEthernet (WSL)} 172.24.0.1 & \texttt{eth0} 172.24.x.x (NAT)\\
+SSH & PuTTY, OpenSSH клиент & OpenSSH сервер 8.9 (порт 22)\\
+Засварлагч & VS Code & —\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Виртуалчлал — яагаад WSL2 вэ}
+Виртуалчлал нь нэг физик компьютер дээр хэд хэдэн үйлдлийн системийг зэрэг ажиллуулах технологи; \textbf{hypervisor} (VMM) техник хангамжийг хийсвэрлэж guest ҮС бүрт “өөрийн компьютер” мэт харагдуулна.
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Type-1} hypervisor техник хангамж дээр шууд ажиллана (Hyper-V, ESXi); \textbf{Type-2} нь host ҮС дээр программ шиг ажиллана (VirtualBox).
+  \item Windows 11 \emph{Home}-д бүрэн Hyper-V байхгүй. \textbf{WSL2} нь хөнгөн VM дотор жинхэнэ Linux кернел ажиллуулдаг тул систем дуудалт, \texttt{fork}, \texttt{strace} бүгд ажиллана; RAM-ыг динамикаар авдаг, Windows-ийн диск \texttt{/mnt/c} дор шууд харагдана.
+  \item Ubuntu 22.04 LTS — урт хугацааны дэмжлэгтэй, хамгийн өргөн хэрэглэгддэг дистрибьюшн.
+\end{itemize}
+\begin{lstlisting}
+PS> wsl --install -d Ubuntu-22.04
+PS> wsl -l -v                  # Ubuntu-22.04  Running  2   (VERSION 2 = WSL2)
+$ uname -a                     # Linux ... microsoft-standard-WSL2 x86_64
+\end{lstlisting}
+
+\section{Сүлжээ ба файл хуулах}
+WSL2 нь \textbf{NAT} горимтой: Windows дээр \texttt{vEthernet (WSL)} адаптер (172.24.0.1) үүсч, VM 172.24.x.x хаяг авна; гадагш host-ийн хаягаар гарна.
+\begin{lstlisting}
+$ ip addr show eth0 | grep inet      # VM-ийн IP
+$ ping -c 2 172.24.0.1               # VM -> Windows
+$ ping -c 2 8.8.8.8                  # VM -> интернэт
+$ cp "/mnt/c/lesson 2026/F.CSA302/lab1/test.txt" ~/ && cat ~/test.txt
+Hello from Windows
+\end{lstlisting}
+Файл хуулах өөр хоёр арга: File Explorer-т \texttt{\textbackslash\textbackslash wsl\$\textbackslash Ubuntu-22.04} хаягаар чирэх, SSH-ээр \texttt{pscp}/\texttt{scp}.
+
+\section{SSH хандалт}
+SSH нь клиент–сервер, шифрлэгдсэн протокол (порт 22). Нууц үгийн оронд \textbf{ed25519 түлхүүр хос} ашигласан: public key VM-ийн \texttt{\textasciitilde/.ssh/authorized\_keys}-д, private key зөвхөн Windows дээр (PuTTY-д \texttt{.ppk} формат). Сервер клиентээс private key-ээр гарын үсэг зурахыг шаардаж шалгадаг тул нууц үг сүлжээгээр дамжихгүй.
+\begin{lstlisting}
+$ apt install openssh-server && systemctl enable --now ssh
+$ ss -tlnp | grep :22                       # 0.0.0.0:22 дээр сонсож байна
+PS> ssh-keygen -t ed25519 -f ~/.ssh/wsl_lab1 # түлхүүр хос
+PuTTY: Host = localhost, Port = 22, user = root, key = wsl_lab1.ppk
+$ whoami; ls "/mnt/c/lesson 2026/F.CSA302"   # нэвтэрч файлд хандав
+\end{lstlisting}
+
+\section{Hello world — хоёр систем дээр}
+\begin{lstlisting}
+PS> gcc hello.c -o hello.exe; .\hello.exe        # Windows: PE (.exe)
+Hello world
+PS> javac HelloWorld.java; java HelloWorld
+Hello world
+$ gcc hello.c -o hello && ./hello                # Ubuntu: ELF
+Hello world
+$ java HelloWorld.java
+Hello world
+$ file hello        # ELF 64-bit LSB executable, x86-64
+\end{lstlisting}
+C код \texttt{gcc}-ээр тухайн ҮС/CPU-ийн \textbf{машины код} болдог (Windows — PE, Linux — ELF) тул ҮС бүр дээр тусад нь хөрвүүлнэ. Java код \texttt{javac}-аар \textbf{bytecode} (\texttt{.class}) болж JVM дээр ажилладаг тул нэг \texttt{.class} хоёр ҮС дээр адилхан ажиллана. \texttt{printf} нь Linux дээр эцэстээ \texttt{write(1, ...)} систем дуудалт хийдэг (\texttt{strace ./hello}).
+
+\section{Дүгнэлт}
+Windows 11 дээр WSL2-оор Ubuntu 22.04 виртуал систем суулгаж, NAT сүлжээ, файл хуулалт, түлхүүрээр нэвтрэх SSH, VS Code-ийг тохируулж, C ба Java программыг хоёр систем дээр хөрвүүлэн ажиллуулав. Энэ орчныг дараагийн бүх лабд (gcc, strace, pthreads, XeLaTeX) ашигласан.
+
+\end{document}

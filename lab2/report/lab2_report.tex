@@ -1,0 +1,119 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{fontspec}
+\setmainfont{DejaVu Serif}
+\setsansfont{DejaVu Sans}
+\setmonofont{DejaVu Sans Mono}[Scale=0.85]
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{fvextra}
+\usepackage{hyperref}
+\usepackage{titlesec}
+
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{0pt}
+\sloppy
+\setlength{\emergencystretch}{3em}
+\hypersetup{hidelinks}
+% listings кирилл үсгийн дарааллыг эвддэг тул fvextra
+\fvset{frame=single, framerule=0.3pt, rulecolor=\color{gray!60}, fontsize=\small, breaklines=true}
+
+\begin{document}
+
+\begin{center}
+  {\Large\bfseries Лабораторийн ажил №2}\\[0.4em]
+  {\large FileCopy — систем дуудалт (POSIX ба Windows API)}\\[0.8em]
+  F.CSM302 Үйлдлийн систем\\
+  Гүйцэтгэсэн: Б.Билгүүн (B190910014)\\[0.3em]
+  Сурах бичиг: A. Silberschatz, P. B. Galvin, G. Gagne, \textit{Operating System Concepts}, 10th ed., Wiley, 2018 (§2.3, Programming Problem 2.24)
+\end{center}
+\hrule
+\bigskip
+
+\section{Даалгавар}
+§2.3-т тайлбарласан файл хуулах программыг эх ба хүлээн авах файлын нэрийг хэрэглэгчээс \emph{асуудаг} байдлаар \textbf{POSIX} болон \textbf{Windows API} хоёроор бичих, бүх алдааны шалгалтыг оруулах, дараа нь Linux дээр \texttt{strace}, Windows дээр дибаггерээр систем дуудалтыг мөрдөх.
+
+\section{Систем дуудалт}
+Систем дуудалт нь үйлдлийн системийн үйлчилгээнд хандах программчлагдах интерфейс. Программ ихэвчлэн API-аар (POSIX, Win32, Java API) дамжуулан дууддаг; дуудалт бүр дугаартай бөгөөд system-call interface түүгээр кернелийн функцийг олж, хэрэглэгчийн горимоос \textbf{кернелийн горимд} шилжинэ.
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Үйлдэл & POSIX (\texttt{FileCopy.c}) & Windows API (\texttt{FileCopy\_win.c})\\
+\midrule
+Файлын мэдээлэл & \texttt{stat()} & \texttt{GetFileAttributesA()}\\
+Нээх & \texttt{open(O\_RDONLY)} & \texttt{CreateFileA(OPEN\_EXISTING)}\\
+Үүсгэх & \texttt{open(O\_CREAT|O\_TRUNC)} & \texttt{CreateFileA(CREATE\_ALWAYS)}\\
+Унших / бичих & \texttt{read()} / \texttt{write()} & \texttt{ReadFile()} / \texttt{WriteFile()}\\
+Хаах & \texttt{close()} & \texttt{CloseHandle()}\\
+Алдаа & \texttt{errno}, \texttt{strerror()} & \texttt{GetLastError()}, \texttt{FormatMessageA()}\\
+Тодорхойлогч & \texttt{int} fd (3, 4, …) & \texttt{HANDLE}\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Программын алхмууд}
+\begin{enumerate}[leftmargin=1.5em]
+  \item Эх, хүлээн авах файлын нэрийг асууна (хоосон нэрийг алдаа гэж үзнэ).
+  \item Эх файл байгаа, энгийн файл (хавтас биш) эсэхийг шалгана.
+  \item Хүлээн авах файл байвал: эх файлтай \emph{ижил файл} эсэхийг (POSIX — \texttt{st\_dev} + \texttt{st\_ino}, Windows — volume serial + file index) шалгаж, дарж бичих эсэхийг асууна (y/n). Ижил файл руу хуулбал \texttt{O\_TRUNC} эх файлыг 0 байт болгож өгөгдөл устах байсан.
+  \item Эх файлыг уншихаар нээнэ; хүлээн авах файлыг үүсгэнэ.
+  \item 4096 байтын (нэг хуудас) буфероор \texttt{read} → \texttt{write} давтана; \texttt{read} 0 буцаавал EOF. \texttt{write} бүх байтыг нэг дор бичихгүй байж болох тул үлдэгдлийг давтан бичнэ, \texttt{EINTR}-д дахин оролдоно.
+  \item Хоёр файлыг хааж, \texttt{close}-ийн алдааг ч шалгана; “Copied N bytes” мэдээлнэ.
+\end{enumerate}
+
+\section{Тест}
+\texttt{test.sh} POSIX хувилбарыг 12 тохиолдлоор шалгадаг — бүгд PASS. Windows хувилбар ижил тохиолдлуудаар гараар шалгагдсан.
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Тохиолдол & Хүлээгдэх & Үр дүн\\
+\midrule
+Текст ба 5 MB binary файл, \texttt{cmp} & агуулга ижил & PASS\\
+Хоосон файл & Copied 0 bytes & PASS\\
+Эх файл байхгүй / хавтас & алдаа, exit 1 & PASS\\
+Эх = хүлээн авагч & алдаа, exit 1 & PASS\\
+Дарж бичих \texttt{n} / \texttt{y} & Cancelled / Copied & PASS\\
+Байхгүй хавтас руу, хоосон нэр & алдаа, exit 1 & PASS\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{strace — Linux дээр мөрдөх}
+\begin{Verbatim}
+$ strace -e trace=newfstatat,openat,read,write,close ./FileCopy
+write(1, "Enter source file name: ", 24) = 24        <- printf -> write(stdout)
+read(0, "input.txt\noutput.txt\n", 4096) = 21        <- fgets -> read(stdin)
+newfstatat(AT_FDCWD, "input.txt", {S_IFREG...}) = 0  <- эх файл байна
+newfstatat(AT_FDCWD, "output.txt", ...) = -1 ENOENT  <- хүлээн авах байхгүй
+openat(AT_FDCWD, "input.txt", O_RDONLY) = 3
+openat(AT_FDCWD, "output.txt", O_WRONLY|O_CREAT|O_TRUNC, 0777) = 4
+read(3, "Hello from Lab 2 - ..."..., 4096) = 49
+write(4, "Hello from Lab 2 - ..."..., 49) = 49
+read(3, "", 4096) = 0                                <- EOF
+close(3) = 0
+close(4) = 0
+\end{Verbatim}
+Бүтэн гаралтын эхний $\approx$35 мөр нь программ ачаалах үеийн дуудалтууд (\texttt{execve}, \texttt{mmap}, \texttt{brk}) — энгийн программ ч олон систем дуудалт хийдгийг харуулна. \texttt{printf}/\texttt{fgets} нь C сангийн функц бөгөөд дотроо \texttt{write}/\texttt{read} дууддаг. 5 MB файл хуулахад \texttt{strace -c} 1224 \texttt{read}, 1224 \texttt{write} тоолсон ($5\,000\,000 / 4096 \approx 1221$ + EOF + prompt).
+
+\section{Windows — gdb-ээр мөрдөх}
+Windows-д strace байхгүй тул \texttt{trace\_win.gdb} скрипт Win32 API дуудалт бүр дээр зогсоож утгыг хэвлэнэ:
+\begin{Verbatim}
+PS> gdb -q -batch -x trace_win.gdb FileCopy.exe
+GetFileAttributesA("input.txt")                         = 0x20
+CreateFileA("input.txt", GENERIC_READ, OPEN_EXISTING)   = handle 0xa8
+CreateFileA("win_out.txt", GENERIC_WRITE, CREATE_ALWAYS) = handle 0xac
+ReadFile(0xa8, buf, 4096)  = 49 bytes
+WriteFile(0xac, buf, 49)   = 49 bytes
+ReadFile(0xa8, buf, 4096)  = 0 bytes     <- EOF
+CloseHandle(0xa8); CloseHandle(0xac)
+\end{Verbatim}
+POSIX-ийн file descriptor 3, 4-тэй адил Windows-д \texttt{HANDLE} утга буцаж байна.
+
+\section{Дүгнэлт}
+Нэг программыг хоёр өөр API-аар бичихэд алхмууд (§2.3-ийн дараалал) ижил, зөвхөн функцийн нэр, алдааны механизм ялгаатай. strace ба gdb-ээр хэрэглэгчийн программын үйлдэл бүр кернелийн систем дуудалт болж хувирч байгааг харууллаа.
+
+\end{document}
